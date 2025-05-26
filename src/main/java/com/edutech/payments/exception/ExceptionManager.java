@@ -2,12 +2,16 @@ package com.edutech.payments.exception;
 
 
 import com.edutech.payments.controller.response.MessageResponse;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +29,33 @@ public class ExceptionManager {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<MessageResponse> handleInvalidEnumValue(MethodArgumentTypeMismatchException ex) {
+        if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
+            String validValues = Arrays.toString(ex.getRequiredType().getEnumConstants());
+            String message = "Estado inválido. Solo se aceptan: " + validValues;
+            return ResponseEntity.badRequest().body(new MessageResponse(message));
+        }
+        return ResponseEntity.badRequest().body(new MessageResponse("Error en el parámetro: " + ex.getName()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<MessageResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        if (ex.getCause() instanceof InvalidFormatException formatException) {
+            Class<?> targetType = formatException.getTargetType();
+            if (targetType.isEnum()) {
+                String valores = Arrays.toString(targetType.getEnumConstants());
+                return ResponseEntity.badRequest().body(
+                        new MessageResponse("Estado inválido. Solo se aceptan: " + valores)
+                );
+            }
+        }
+        return ResponseEntity.badRequest().body(
+                new MessageResponse("Error en el formato del cuerpo JSON: " + ex.getMessage())
+        );
+    }
+
 
     //404
     @ExceptionHandler(ResourceNotFoundException.class)

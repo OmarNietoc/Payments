@@ -5,6 +5,7 @@ import com.edutech.payments.client.UserClient;
 import com.edutech.payments.controller.response.MessageResponse;
 import com.edutech.payments.dto.PaymentDto;
 import com.edutech.payments.exception.ResourceNotFoundException;
+import com.edutech.payments.exception.ConflictException;
 import com.edutech.payments.model.Payment;
 import com.edutech.payments.model.PaymentStatus;
 import com.edutech.payments.repository.PaymentRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,16 +32,18 @@ public class PaymentService {
 
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado: " + id));
     }
 
     public ResponseEntity<MessageResponse> createPayment(PaymentDto dto) {
+
+        String transactionCode = UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
 
         validateUser(dto.getIdUser());
         validateCourse(dto.getIdCourse());
 
         Payment payment = new Payment();
-        payment.setTransactionCode(dto.getTransactionCode());
+        payment.setTransactionCode(transactionCode);
         payment.setIdUser(dto.getIdUser());
         payment.setIdCourse(dto.getIdCourse());
         payment.setAmount(dto.getAmount());
@@ -49,6 +53,28 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         return ResponseEntity.ok(new MessageResponse("Pago creado exitosamente."));
+    }
+
+    public ResponseEntity<MessageResponse> updatePayment(Long id,PaymentDto dto) {
+
+        validateUser(dto.getIdUser());
+        validateCourse(dto.getIdCourse());
+
+        Payment payment = getPaymentById(id);
+        payment.setIdUser(dto.getIdUser());
+        payment.setIdCourse(dto.getIdCourse());
+        payment.setAmount(dto.getAmount());
+
+        paymentRepository.save(payment);
+
+        return ResponseEntity.ok(new MessageResponse("Pago actualizado exitosamente."));
+    }
+
+    public ResponseEntity<MessageResponse> updatePaymentStatus(Long id, PaymentStatus newStatus) {
+        Payment payment = getPaymentById(id);
+        payment.setStatus(newStatus);
+        paymentRepository.save(payment);
+        return ResponseEntity.ok(new MessageResponse("Estado de pago actualizado a: " + newStatus));
     }
 
     public void deletePaymentById(Long id) {
@@ -64,7 +90,7 @@ public class PaymentService {
         try {
             userClient.getUserById(userId);
         } catch (FeignException.NotFound e) {
-            throw new ResourceNotFoundException("Usuario con ID " + userId + " no existe.");
+            throw new ResourceNotFoundException("Usuario no encontrado.");
         }
     }
 
@@ -72,7 +98,7 @@ public class PaymentService {
         try {
             courseClient.getCourseById(courseId);
         } catch (FeignException.NotFound e) {
-            throw new ResourceNotFoundException("Curso con ID " + courseId + " no existe.");
+            throw new ResourceNotFoundException("Curso no encontrado");
         }
     }
 }

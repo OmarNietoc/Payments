@@ -1,5 +1,6 @@
 package com.edutech.payments.dto;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -8,8 +9,6 @@ import java.math.BigDecimal;
 @Data
 public class PaymentDto {
 
-    @NotNull(message = "El código de transacción no puede ser nulo")
-    private Long transactionCode;
 
     @NotNull(message = "El ID de usuario no puede ser nulo")
     private Long idUser;

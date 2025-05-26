@@ -19,7 +19,7 @@ public class Payment {
     private Long id;
 
     @NotNull(message = "transactionCode no puede ser nulo")
-    private Long transactionCode;
+    private String transactionCode;
 
     @NotNull(message = "idUser no puede ser nulo")
     private Long idUser;
@@ -36,4 +36,13 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "status no puede ser nulo")
     private PaymentStatus status;
+
+    public Payment(String transactionCode, Long idUser, Long idCourse, BigDecimal amount, LocalDateTime transactionDate, PaymentStatus status) {
+        this.transactionCode = transactionCode;
+        this.idUser = idUser;
+        this.idCourse = idCourse;
+        this.amount = amount;
+        this.transactionDate = transactionDate;
+        this.status = status;
+    }
 }
