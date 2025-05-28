@@ -99,7 +99,7 @@ public class PaymentService {
 
     private EnrollmentDto validateEnrollment(Long enrollmentId) {
         try {
-            return courseClient.getEnrollmentById(enrollmentId);
+            return courseClient.getEnrollmentDtoById(enrollmentId);
 
         } catch (FeignException.NotFound e) {
             throw new ResourceNotFoundException("Inscripción no encontrada");

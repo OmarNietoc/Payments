@@ -13,5 +13,5 @@ public interface CourseClient {
     CourseDto getCourseById(@PathVariable("id") Long id);
 
     @GetMapping("/enrollments/{id}")
-    EnrollmentDto getEnrollmentById(@PathVariable("id") Long id);
+    EnrollmentDto getEnrollmentDtoById(@PathVariable("id") Long id);
 }
