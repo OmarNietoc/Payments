@@ -3,9 +3,9 @@ package com.edutech.payments.service;
 import com.edutech.payments.client.CourseClient;
 import com.edutech.payments.client.UserClient;
 import com.edutech.payments.controller.response.MessageResponse;
+import com.edutech.payments.dto.EnrollmentDto;
 import com.edutech.payments.dto.PaymentDto;
 import com.edutech.payments.exception.ResourceNotFoundException;
-import com.edutech.payments.exception.ConflictException;
 import com.edutech.payments.model.Payment;
 import com.edutech.payments.model.PaymentStatus;
 import com.edutech.payments.repository.PaymentRepository;
@@ -39,14 +39,11 @@ public class PaymentService {
 
         String transactionCode = UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
 
-        validateUser(dto.getIdUser());
-        validateCourse(dto.getIdCourse());
-
+        EnrollmentDto enrollment = validateEnrollment(dto.getEnrollmentId());
         Payment payment = new Payment();
         payment.setTransactionCode(transactionCode);
-        payment.setIdUser(dto.getIdUser());
-        payment.setIdCourse(dto.getIdCourse());
-        payment.setAmount(dto.getAmount());
+        payment.setEnrollmentId(enrollment.getId());
+        payment.setAmount(enrollment.getFinalPrice());
         payment.setTransactionDate(LocalDateTime.now());
         payment.setStatus(PaymentStatus.PENDING);
 
@@ -55,22 +52,20 @@ public class PaymentService {
         return ResponseEntity.ok(new MessageResponse("Pago creado exitosamente."));
     }
 
-    public ResponseEntity<MessageResponse> updatePayment(Long id,PaymentDto dto) {
+    public ResponseEntity<MessageResponse> updatePayment(Long id, PaymentDto dto) {
 
-        validateUser(dto.getIdUser());
-        validateCourse(dto.getIdCourse());
+        EnrollmentDto enrollment = validateEnrollment(dto.getEnrollmentId());
 
         Payment payment = getPaymentById(id);
-        payment.setIdUser(dto.getIdUser());
-        payment.setIdCourse(dto.getIdCourse());
-        payment.setAmount(dto.getAmount());
+        payment.setEnrollmentId(dto.getEnrollmentId());
+        payment.setAmount(enrollment.getFinalPrice());
 
         paymentRepository.save(payment);
 
         return ResponseEntity.ok(new MessageResponse("Pago actualizado exitosamente."));
     }
 
-    public ResponseEntity<MessageResponse> updatePaymentStatus(Long id, PaymentStatus newStatus) {
+    public ResponseEntity<MessageResponse> updatePaymentStatus(Long id,PaymentStatus newStatus) {
         Payment payment = getPaymentById(id);
         payment.setStatus(newStatus);
         paymentRepository.save(payment);
@@ -101,4 +96,14 @@ public class PaymentService {
             throw new ResourceNotFoundException("Curso no encontrado");
         }
     }
+
+    private EnrollmentDto validateEnrollment(Long enrollmentId) {
+        try {
+            return courseClient.getEnrollmentById(enrollmentId);
+
+        } catch (FeignException.NotFound e) {
+            throw new ResourceNotFoundException("Inscripción no encontrada");
+        }
+    }
+
 }

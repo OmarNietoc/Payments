@@ -21,9 +21,9 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) {
         // Cargar pagos de prueba
         List<Payment> payments = List.of(
-                new Payment( "TRX000021",1L, 1L, new BigDecimal("49900"), LocalDateTime.now().minusDays(3), PaymentStatus.CONFIRMED),
-                new Payment( "TRX000022",2L, 3L, new BigDecimal("59900"), LocalDateTime.now().minusDays(1), PaymentStatus.PENDING),
-                new Payment( "TRX000023",3L, 2L, new BigDecimal("69900"), LocalDateTime.now(), PaymentStatus.REJECTED)
+                new Payment("TRX000021", 1L, new BigDecimal("49900"), LocalDateTime.now().minusDays(3), PaymentStatus.CONFIRMED),
+                new Payment("TRX000022", 3L, new BigDecimal("59900"), LocalDateTime.now().minusDays(1), PaymentStatus.PENDING),
+                new Payment("TRX000023", 2L, new BigDecimal("69900"), LocalDateTime.now(), PaymentStatus.REJECTED)
         );
         payments.forEach(paymentService::savePayment);
 

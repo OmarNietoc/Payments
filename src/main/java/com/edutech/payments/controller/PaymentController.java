@@ -2,7 +2,6 @@ package com.edutech.payments.controller;
 
 import com.edutech.payments.controller.response.MessageResponse;
 import com.edutech.payments.dto.PaymentDto;
-import com.edutech.payments.dto.UpdateStatusDto;
 import com.edutech.payments.model.Payment;
 import com.edutech.payments.model.PaymentStatus;
 import com.edutech.payments.service.PaymentService;
@@ -33,9 +32,9 @@ public class PaymentController {
     }
 
     // Crear un nuevo pago
-    @PostMapping
-    public ResponseEntity<MessageResponse> createPayment(@Valid @RequestBody PaymentDto paymentDto) {
-        return paymentService.createPayment(paymentDto);
+    @PostMapping("/add")
+    public ResponseEntity<MessageResponse> createPayment(@Valid @RequestBody PaymentDto dto) {
+        return paymentService.createPayment(dto);
     }
 
     @PutMapping("/{id}")
@@ -43,11 +42,13 @@ public class PaymentController {
         return paymentService.updatePayment(id, paymentDto);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateStatusDto statusDto) {
-        return paymentService.updatePaymentStatus(id, statusDto.getStatus());
-    }
+    @PatchMapping("/{id}/status/{newStatus}")
+    public ResponseEntity<MessageResponse> updatePaymentStatus(
+            @PathVariable Long id,
+            @PathVariable PaymentStatus newStatus) {
 
+        return paymentService.updatePaymentStatus(id, newStatus);
+    }
     // Eliminar un pago
     @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponse> deletePayment(@PathVariable Long id) {
